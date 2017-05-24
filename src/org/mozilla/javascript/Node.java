@@ -216,6 +216,10 @@ public class Node implements Iterable<Node>
         return next;
     }
 
+    public void setNext(Node n) {
+        next = n;
+    }
+
     public Node getChildBefore(Node child) {
         if (child == first)
             return null;
