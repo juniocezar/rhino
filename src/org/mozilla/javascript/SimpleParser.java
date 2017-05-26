@@ -1,7 +1,3 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 package org.mozilla.javascript;
 
 import org.mozilla.javascript.ast.*;
@@ -28,7 +24,7 @@ public class SimpleParser {
 
         // Replace the string by the file path.
         // or you can use an argument as file input
-        File scriptFile = new File("/home/junio/test.js"); 
+        File scriptFile = new File("/home/grad/ccomp/12/juniocezar/test.js"); 
         try {
             FileReader fr = new FileReader(scriptFile); 
             Parser p = new Parser(environment);
@@ -39,32 +35,30 @@ public class SimpleParser {
 
         // Implementing the visit interface
         // may be done as well in a secondary class
+        // This method visit every node in a 'aleatory way'
+        // All nodes are seen as members os a linked list and
+        // function visit iterates over this list
         astRoot.visit(new NodeVisitor() {
             @Override
             public boolean visit(AstNode node) {
                 int nodeType = node.getType();
-                /*if(nodeType == Token.FUNCTION) {
+                if(nodeType == Token.FUNCTION) {
                     handleFunction(node);
-                }*/
-                if(nodeType == Token.STRING) {
-                    Node copy = new Node(Token.STRING);                    
-                    copy.setNext(node.getNext());
-                    node.setNext(copy);
-                    //node.addChildToFront(tst);
-                }
+                }                
                 //processNode(node);
                 return true; //process children
             }
         });
 
 
-        astRoot.visit(new NodeVisitor() {
-            @Override
-            public boolean visit(AstNode node) {                
-                processNode(node);
-                return true; //process children
-            }
-        });        
+        // another way to iterate over the AST is by getting each node
+        // identify it by its Token type and the process it individually
+        // this way we get the astRoot, check if it hasChildren(). get the
+        // first child, getFirstChild, for each child we can get its children
+        // for each child we can get its siblings with the next property.
+        // each AstNode has its speciallized functions to get its members
+        // like getName, getParams, getBody for a FunctionNode
+
 
         System.out.println("\n\n === Instrumented code ===\n" + astRoot.toSource());
     }
@@ -79,27 +73,24 @@ public class SimpleParser {
         
         String fName = ((FunctionNode)fNode).getName();
         List<AstNode> params = ((FunctionNode)fNode).getParams();
+        AstNode body = ((FunctionNode)fNode).getBody();
 
-        System.out.println("\nFunction Name: " + fName);
+        //System.out.println("\nFunction Name: " + fName);
         for (AstNode node : params) {
             String argName = ((Name)node).getIdentifier();
-            System.out.println("\nArgument: " + argName);
+            //System.out.println("\nArgument: " + argName);
             if(specialize(node)) {
                 StringLiteral spec = new StringLiteral();
                 spec.setValue("specialize " + argName);
+                spec.setQuoteCharacter('\"');
 
                 ExpressionStatement expr = new ExpressionStatement(spec);
 
-                System.out.println("specialized -> " + spec.getValue());
-                
+                // System.out.println("specialized -> " + spec.getValue());                
 
-                Node store = new Node(Token.EXPR_RESULT);
+                body.addChildToFront(expr);
 
-
-                
-                fNode.addChildToBack(store);
-
-                System.out.println("fNode -> " + fNode.toSource());
+                // System.out.println("fNode -> " + fNode.toSource());
 
             }
         }

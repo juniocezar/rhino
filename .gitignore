@@ -2,7 +2,7 @@
 .DS_Store
 
 # build directories
-#build/
+build/classes/org/
 lib/
 buildGradle
 
